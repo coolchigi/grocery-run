@@ -11,6 +11,7 @@ class AppRoutes {
   static const String groceryRunDetail = '/grocery-run-detail';
   static const String ocrReview = '/ocr-review';
   static const String addGroceryRun = '/add-grocery-run';
+  static const String addGroceryRunManual = '/add-grocery-run-manual';
   static const String receiptScanner = '/receipt-scanner';
   static const String dashboardHome = '/dashboard-home';
 
@@ -19,6 +20,8 @@ class AppRoutes {
     groceryRunDetail: (context) => const GroceryRunDetail(),
     ocrReview: (context) => const OcrReview(),
     addGroceryRun: (context) => const AddGroceryRun(),
+    addGroceryRunManual: (context) =>
+        const AddGroceryRun(manualEntryOnly: true),
     receiptScanner: (context) => const ReceiptScanner(),
     dashboardHome: (context) => const DashboardHome(),
     // TODO: Add your other routes here
