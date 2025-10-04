@@ -31,7 +31,8 @@ class QuickActionsWidget extends StatelessWidget {
               context,
               title: 'Manual Entry',
               icon: 'edit',
-              onTap: () => Navigator.pushNamed(context, '/add-grocery-run'),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/add-grocery-run-manual'),
             ),
           ),
         ],
