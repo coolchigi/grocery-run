@@ -12,7 +12,9 @@ import './widgets/notes_input_widget.dart';
 import './widgets/store_selection_widget.dart';
 
 class AddGroceryRun extends StatefulWidget {
-  const AddGroceryRun({super.key});
+  final bool manualEntryOnly;
+
+  const AddGroceryRun({super.key, this.manualEntryOnly = false});
 
   @override
   State<AddGroceryRun> createState() => _AddGroceryRunState();
@@ -36,7 +38,9 @@ class _AddGroceryRunState extends State<AddGroceryRun> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    if (!widget.manualEntryOnly) {
+      _initializeCamera();
+    }
   }
 
   @override
@@ -181,7 +185,9 @@ class _AddGroceryRunState extends State<AddGroceryRun> {
   bool _canSave() {
     return selectedStore != null &&
         selectedStore!.isNotEmpty &&
-        (capturedImagePath != null || manualItemCount > 0);
+        (capturedImagePath != null ||
+            manualItemCount > 0 ||
+            widget.manualEntryOnly);
   }
 
   Future<void> _saveGroceryRun() async {
@@ -262,7 +268,7 @@ class _AddGroceryRunState extends State<AddGroceryRun> {
           ),
         ),
         title: Text(
-          'Add Grocery Run',
+          widget.manualEntryOnly ? 'Manual Grocery Entry' : 'Add Grocery Run',
           style: AppTheme.lightTheme.textTheme.titleLarge,
         ),
         actions: [
@@ -324,16 +330,19 @@ class _AddGroceryRunState extends State<AddGroceryRun> {
 
               SizedBox(height: 3.h),
 
-              // Input Method Cards
-              InputMethodCardsWidget(
-                onScanReceipt: _onScanReceipt,
-                onManualEntry: _onManualEntry,
-                capturedImagePath: capturedImagePath,
-                onRetakePhoto: _onRetakePhoto,
-                onProcessReceipt: _onProcessReceipt,
-                manualItemCount: manualItemCount,
-                manualTotal: manualTotal,
-              ),
+              // Input Method Cards - conditionally hide scan receipt option
+              if (widget.manualEntryOnly)
+                _buildManualOnlySection()
+              else
+                InputMethodCardsWidget(
+                  onScanReceipt: _onScanReceipt,
+                  onManualEntry: _onManualEntry,
+                  capturedImagePath: capturedImagePath,
+                  onRetakePhoto: _onRetakePhoto,
+                  onProcessReceipt: _onProcessReceipt,
+                  manualItemCount: manualItemCount,
+                  manualTotal: manualTotal,
+                ),
 
               SizedBox(height: 3.h),
 
@@ -404,6 +413,128 @@ class _AddGroceryRunState extends State<AddGroceryRun> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildManualOnlySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Add Items Manually',
+          style: AppTheme.lightTheme.textTheme.titleMedium,
+        ),
+        SizedBox(height: 2.h),
+        Container(
+          width: double.infinity,
+          height: 25.h,
+          decoration: BoxDecoration(
+            color: AppTheme.lightTheme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: manualItemCount > 0
+                  ? AppTheme.lightTheme.colorScheme.secondary
+                  : AppTheme.lightTheme.colorScheme.outline
+                      .withValues(alpha: 0.3),
+              width: manualItemCount > 0 ? 2 : 1,
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _onManualEntry,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: EdgeInsets.all(4.w),
+                child: manualItemCount > 0
+                    ? _buildManualEntryProgress()
+                    : _buildManualEntryContent(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildManualEntryContent() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 16.w,
+          height: 16.w,
+          decoration: BoxDecoration(
+            color: AppTheme.lightTheme.colorScheme.secondary
+                .withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: CustomIconWidget(
+            iconName: 'add',
+            color: AppTheme.lightTheme.colorScheme.secondary,
+            size: 8.w,
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          'Start Adding Items',
+          style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+            color: AppTheme.lightTheme.colorScheme.secondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 1.h),
+        Text(
+          'Add items one by one with prices and details',
+          style: AppTheme.lightTheme.textTheme.bodySmall,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildManualEntryProgress() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 16.w,
+          height: 16.w,
+          decoration: BoxDecoration(
+            color: AppTheme.lightTheme.colorScheme.secondary
+                .withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: CustomIconWidget(
+            iconName: 'shopping_cart',
+            color: AppTheme.lightTheme.colorScheme.secondary,
+            size: 8.w,
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          '$manualItemCount Items',
+          style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+            color: AppTheme.lightTheme.colorScheme.secondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 1.h),
+        Text(
+          '\$${manualTotal.toStringAsFixed(2)}',
+          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+            color: AppTheme.lightTheme.colorScheme.secondary,
+            fontWeight: FontWeight.w700,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 1.h),
+        Text(
+          'Tap to add more items',
+          style: AppTheme.lightTheme.textTheme.bodySmall,
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }
